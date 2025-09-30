@@ -5,6 +5,8 @@ import optuna
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 import numpy as np
+import math
+import statistics
 
 from modellib.build import build as build_model
 from modellib.loader import create_dataloaders
@@ -97,6 +99,8 @@ class Objective:
             raise optuna.exceptions.TrialPruned()
 
         fold_metrics = []
+        fold_best_epochs = []
+        fold_best_steps = []
         global_step = 0 
         
         # 3. K-Fold 교차 검증 루프
@@ -116,6 +120,9 @@ class Objective:
             criterion = nn.CrossEntropyLoss()
 
             best_fold_metric = -np.inf if self.direction == 'maximize' else np.inf
+            best_epoch_in_fold = None
+            
+            steps_per_epoch_fold = len(train_loader)
             
             # 4. 에폭 루프
             for epoch in range(self.max_epochs):
@@ -135,12 +142,27 @@ class Objective:
                     raise optuna.exceptions.TrialPruned()
 
                 if self.direction == 'maximize':
-                    best_fold_metric = max(best_fold_metric, macro_f1)
+                    if macro_f1 > best_fold_metric:
+                        best_fold_metric = macro_f1
+                        best_epoch_in_fold = epoch
                 else:
-                    best_fold_metric = min(best_fold_metric, val_loss)
+                    if val_loss < best_fold_metric:
+                        best_fold_metric = val_loss
+                        best_epoch_in_fold = epoch
 
             fold_metrics.append(best_fold_metric)
+            
+            if best_epoch_in_fold is None:
+                best_epoch_in_fold = self.max_epochs -1
+            fold_best_epochs.append(best_epoch_in_fold + 1)
+            fold_best_steps.append((best_epoch_in_fold+1)*steps_per_epoch_fold)
 
         # 6. K-Fold 결과의 평균을 최종 점수로 반환
         final_score = np.mean(fold_metrics)
+        
+        target_steps_median = int(statistics.median(fold_best_steps))
+        trial.set_user_attr("fold_best_epochs", fold_best_epochs)
+        trial.set_user_attr("fold_best_steps", fold_best_steps)
+        trial.set_user_attr("target_steps_median", target_steps_median)
+        
         return final_score

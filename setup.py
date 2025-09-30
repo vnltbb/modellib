@@ -7,7 +7,7 @@ setup(
     author='vnltbb',  # 이 부분은 사용자님의 정보로 수정하세요.
     author_email='myhajung@gmail.com', # 이 부분은 사용자님의 정보로 수정하세요.
     url='https://github.com/vnltbb', # GitHub 리포지토리가 있다면 추가하세요.
-    packages=find_packages(),
+    packages=["modelib"],
     install_requires=[
         'torch',
         'torchvision',
