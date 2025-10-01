@@ -42,11 +42,21 @@ class TransformedSubset(Subset):
         # 1. 원본 데이터셋의 __getitem__을 호출하여 데이터를 가져옵니다.
         #    (full_dataset의 transform이 None이므로 여기서는 PIL Image와 레이블이 반환됩니다.)
         img, label = self.dataset[self.indices[idx]]
+        
+        transform_id= id(self.transfor)
+        if not self._first_item_printed.get(transform_id, False):
+            print("\n--- TransformedSubset 디버깅 시작---")
+            print(f"epdlxjtpt whdfb: {'train' if 'Random' in str(self.transform) else 'Validation'}")
+            print(type(img))
+            print({'yes' if self.transform else 'no'})
 
         # 2. 이 Subset에 지정된 transform을 적용합니다.
         if self.transform:
             img = self.transform(img)
-
+        if not self._first_item_printed.get(transform_id, False):
+            print(type(img))
+            self._first_item_printed[transform_id]=True
+            
         return img, label
     def __len__(self):
         return len(self.indices)
