@@ -50,7 +50,10 @@ def save_model_details(
         
         f.write(f"Total Parameters: {model_summary.total_params:,}\n")
         f.write(f"Trainable Parameters: {model_summary.trainable_params:,}\n")
-        f.write(f"Non-trainable Parameters: {len(model.state_dict()) - model_summary.trainable_params:,}\n")
+        
+        non_trainable_params = model_summary.total_params - model_summary.trainable_params
+        f.write(f"Non-trainable Parameters: {non_trainable_params:,}\n")
+        
         f.write(f"Estimated Model Size (MB): {model_size_mb:.2f} MB\n")
         f.write(f"Total MACs (G): {model_summary.total_mult_adds / 1e9:.2f} G\n\n")
         

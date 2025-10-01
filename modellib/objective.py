@@ -11,7 +11,7 @@ import statistics
 from modellib.build import build as build_model
 from modellib.loader import create_dataloaders
 
-# --- 헬퍼 함수: 1 에폭 훈련 및 검증 ---
+# --- 헬퍼 함수: 1 에폭 훈련 및 검증  ---
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     total_loss = 0.0
@@ -44,7 +44,7 @@ def validate_one_epoch(model, dataloader, criterion, device):
     return avg_loss, macro_f1
 
 
-# --- Objective 클래스  ---
+# --- Objective 클래스 ---
 class Objective:
     def __init__(
         self,
@@ -72,7 +72,7 @@ class Objective:
         print(f"Objective configured to run on device: {self.device}")
 
     def __call__(self, trial: optuna.Trial) -> float:
-        # 1. 설정 파일로부터 search space 동적 생성
+        # 1. 하이퍼파라미터 제안
         params = {}
         for name, p in self.config['search_space'].items():
             if p['type'] == 'categorical':
@@ -85,7 +85,6 @@ class Objective:
 
         # 2. 데이터 로더 생성 (K-Fold CV)
         try:
-            
             cv_generator, _, _ = create_dataloaders(
                 data_dir=self.data_dir,
                 backbone=self.backbone,
@@ -105,7 +104,6 @@ class Objective:
         
         # 3. K-Fold 교차 검증 루프
         for fold, train_loader, val_loader in cv_generator:
-            
             model = build_model(
                 self.backbone, 
                 num_classes=len(train_loader.dataset.dataset.classes), 
@@ -115,10 +113,13 @@ class Objective:
             optimizer = getattr(optim, params['optimizer'])(
                 model.parameters(), 
                 lr=params['lr'], 
-                weight_decay=params.get('weight_decay', 0.0) # weight_decay는 없을 수 있으므로 .get() 사용
+                weight_decay=params.get('weight_decay', 0.0)
             )
             criterion = nn.CrossEntropyLoss()
 
+            # --- Early Stopping 및 최적 Epoch 기록을 위한 변수 초기화 ---
+            patience = 5
+            patience_counter = 0
             best_fold_metric = -np.inf if self.direction == 'maximize' else np.inf
             best_epoch_in_fold = None
             
@@ -132,30 +133,43 @@ class Objective:
                 print(f"  [Trial {trial.number}/Fold {fold+1}] Epoch {epoch+1}/{self.max_epochs} | "
                       f"Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Macro-F1: {macro_f1:.4f}")
 
-                # 5. Pruning (가지치기)
+                # 5. Pruning (가지치기) 로직
                 metric_for_pruning = val_loss if self.metric_to_optimize == 'val_loss' else macro_f1
-                
                 trial.report(metric_for_pruning, global_step)
-                global_step += 1 # global_step 증가
+                global_step += 1
                 
                 if trial.should_prune():
                     raise optuna.exceptions.TrialPruned()
 
-                if self.direction == 'maximize':
-                    if macro_f1 > best_fold_metric:
-                        best_fold_metric = macro_f1
-                        best_epoch_in_fold = epoch
-                else:
-                    if val_loss < best_fold_metric:
-                        best_fold_metric = val_loss
-                        best_epoch_in_fold = epoch
+                # --- Best Metric 업데이트 및 Early Stopping 로직 ---
+                current_metric = macro_f1 if self.direction == 'maximize' else val_loss
 
+                if self.direction == 'maximize':
+                    if current_metric > best_fold_metric:
+                        best_fold_metric = current_metric
+                        best_epoch_in_fold = epoch
+                        patience_counter = 0
+                    else:
+                        patience_counter += 1
+                else: # minimize
+                    if current_metric < best_fold_metric:
+                        best_fold_metric = current_metric
+                        best_epoch_in_fold = epoch
+                        patience_counter = 0
+                    else:
+                        patience_counter += 1
+
+                if patience_counter >= patience:
+                    print(f"  -- Early stopping triggered at epoch {epoch + 1} --")
+                    break
+
+            # --- Epoch 루프 종료 후 Fold 결과 저장 ---
             fold_metrics.append(best_fold_metric)
             
             if best_epoch_in_fold is None:
-                best_epoch_in_fold = self.max_epochs -1
+                best_epoch_in_fold = self.max_epochs - 1
             fold_best_epochs.append(best_epoch_in_fold + 1)
-            fold_best_steps.append((best_epoch_in_fold+1)*steps_per_epoch_fold)
+            fold_best_steps.append((best_epoch_in_fold + 1) * steps_per_epoch_fold)
 
         # 6. K-Fold 결과의 평균을 최종 점수로 반환
         final_score = np.mean(fold_metrics)

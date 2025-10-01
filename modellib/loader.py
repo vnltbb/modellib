@@ -34,17 +34,19 @@ def get_transforms(backbone: str, image_size: int = 224) -> Tuple[transforms.Com
     return train_transforms, val_transforms
 
 class TransformedSubset(Subset):
-    # ... 이전 코드와 동일 (생략)
     def __init__(self, dataset, indices, transform):
         super().__init__(dataset, indices)
         self.transform = transform
     def __getitem__(self, idx):
-        # 원본 데이터셋은 transform이 없으므로 PIL Image를 반환합니다.
-        x, y = self.dataset.samples[self.indices[idx]]
-        x = self.dataset.loader(x) # PIL Image로 로드
+        # 1. 원본 데이터셋의 __getitem__을 호출하여 데이터를 가져옵니다.
+        #    (full_dataset의 transform이 None이므로 여기서는 PIL Image와 레이블이 반환됩니다.)
+        img, label = self.dataset[self.indices[idx]]
+
+        # 2. 이 Subset에 지정된 transform을 적용합니다.
         if self.transform:
-            x = self.transform(x)
-        return x, y
+            img = self.transform(img)
+
+        return img, label
 
 # --- Main Function ---
 def create_dataloaders(
