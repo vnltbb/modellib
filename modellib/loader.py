@@ -34,8 +34,9 @@ def get_transforms(backbone: str, image_size: int = 224) -> Tuple[transforms.Com
     return train_transforms, val_transforms
 
 class TransformedSubset(Subset):
-    def __init__(self, dataset, indices, transform):
-        super().__init__(dataset, indices)
+    def __init__(self, dataset, indices, transform=None):
+        self.dataset = dataset
+        self.indices = indices
         self.transform = transform
     def __getitem__(self, idx):
         # 1. 원본 데이터셋의 __getitem__을 호출하여 데이터를 가져옵니다.
@@ -47,6 +48,8 @@ class TransformedSubset(Subset):
             img = self.transform(img)
 
         return img, label
+    def __len__(self):
+        return len(self.indices)
 
 # --- Main Function ---
 def create_dataloaders(
