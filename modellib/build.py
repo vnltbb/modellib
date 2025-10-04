@@ -6,7 +6,7 @@ from typing import List
 # 지원하는 모델 목록을 명시적으로 관리합니다.
 SUPPORTED_BACKBONES = {
     'resnet50': 'resnet50',
-    'mobilenetv2': 'mobilenet_v2',
+    'mobilenetv2': 'mobilenetv2_100',
     'efficientnetv2l': 'efficientnetv2_l',
     'densenet121': 'densenet121'
 }
@@ -38,7 +38,7 @@ def build(backbone: str, num_classes: int, transfer: bool = True, dropout_rate: 
     Raises:
         ValueError: 지원하지 않는 백본 이름이 입력된 경우.
     """
-    backbone_key = backbone.lower().replace('-', '').replace('_', '')
+    backbone_key = backbone.lower()
     
     if backbone_key not in SUPPORTED_BACKBONES:
         raise ValueError(
