@@ -5,10 +5,10 @@ from typing import List
 
 # 지원하는 모델 목록을 명시적으로 관리합니다.
 SUPPORTED_BACKBONES = {
-    'resnet50': 'resnet50',
-    'mobilenetv2': 'mobilenetv2_100',
-    'efficientnetv2l': 'efficientnetv2_l',
-    'densenet121': 'densenet121'
+    'resnet50': 'wide_resnet50_2.tv2_in1k',
+    'mobilenetv2': 'mobilenetv2_100.ra_in1k',
+    'efficientnetv2l': 'tf_efficientnetv2_l.in1k',
+    'densenet121': 'densenet121.ra_in1k'
 }
 
 def get_supported_backbones() -> List[str]:
