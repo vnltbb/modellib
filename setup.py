@@ -4,9 +4,9 @@ setup(
     name='modellib',
     version='0.1.0',
     description='A custom Python module for streamlining plant disease detection model development pipeline.',
-    author='vnltbb',  # 이 부분은 사용자님의 정보로 수정하세요.
-    author_email='myhajung@gmail.com', # 이 부분은 사용자님의 정보로 수정하세요.
-    url='https://github.com/vnltbb', # GitHub 리포지토리가 있다면 추가하세요.
+    author='vnltbb',  
+    author_email='myhajung@gmail.com',
+    url='https://github.com/vnltbb',
     packages=find_packages(),
     install_requires=[
         'torch',
@@ -14,7 +14,7 @@ setup(
         'timm',
         'numpy',
         'optuna',
-        'scikit-learn',
+        'scikit-learn>=1.1',
         'matplotlib',
         'seaborn',
         'torchinfo',
