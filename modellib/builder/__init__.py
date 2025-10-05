@@ -1,4 +1,4 @@
-from .densenet import build
-from .efficientnet import build
-from .mobilenet import build
-from .resnet import build
+from .densenet import build as dense_build
+from .efficientnet import build as efficinet_build
+from .mobilenet import build as mobile_build
+from .resnet import build as res_build
