@@ -13,7 +13,6 @@ setup(
         'torchvision',
         'timm',
         'numpy',
-        'optuna',
         'scikit-learn>=1.1',
         'matplotlib',
         'seaborn',
