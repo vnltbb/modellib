@@ -469,9 +469,9 @@ def data_table_cv(rep_list: List[Dict], save_basepath: Union[str, Path],
                         # seed=42, stratified=True)
 
 # split = split_by_ratio(
-    ds, 0.7, 0.2, 0.1,
-    seed=42, stratified=True,
-    equalize_train_min=True  # ← 가장 적은 클래스 개수에 맞춰 train만 균등화
+    # ds, 0.7, 0.2, 0.1,
+    # seed=42, stratified=True,
+    # equalize_train_min=True  # ← 가장 적은 클래스 개수에 맞춰 train만 균등화
 # )
 
 # rep = report_split(ds, split)
