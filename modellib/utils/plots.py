@@ -14,22 +14,46 @@ from sklearn.preprocessing import label_binarize
 from itertools import cycle
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Tuple, Dict, Any
 
-def _get_predictions(model, dataloader, device):
-    """모델과 데이터로더를 받아 예측 확률과 실제 라벨을 반환하는 헬퍼 함수"""
+def _iter_batches(dataloader, x_key: str = "pixel_values", y_key: str = "labels"):
+    """
+    dataloader에서 배치를 표준 (inputs, labels) 튜플로 통일.
+    - dict 배치: batch[x_key], batch[y_key]
+    - 튜플/리스트 배치: (inputs, labels)
+    """
+    for batch in dataloader:
+        if isinstance(batch, dict):
+            if x_key not in batch or y_key not in batch:
+                raise KeyError(f"Dict batch must contain keys '{x_key}' and '{y_key}'. "
+                               f"Got keys: {list(batch.keys())}")
+            yield batch[x_key], batch[y_key]
+        elif isinstance(batch, (tuple, list)) and len(batch) >= 2:
+            yield batch[0], batch[1]
+        else:
+            raise TypeError(f"Unsupported batch type: {type(batch)}. "
+                            "Expected dict with pixel/label keys or (inputs, labels).")
+
+def _get_predictions(model, dataloader, device, x_key: str = "pixel_values", y_key: str = "labels"):
+    """
+    모델의 확률 예측을 반환.
+    Returns:
+        y_true: (N,) int
+        y_pred_proba: (N, C) float
+    """
     model.eval()
-    all_labels = []
-    all_probas = []
+    y_true_list = []
+    y_proba_list = []
     with torch.no_grad():
-        for inputs, labels in dataloader:
+        for inputs, labels in _iter_batches(dataloader, x_key=x_key, y_key=y_key):
             inputs = inputs.to(device)
             outputs = model(inputs)
             probas = torch.nn.functional.softmax(outputs, dim=1)
-            
-            all_labels.extend(labels.cpu().numpy())
-            all_probas.extend(probas.cpu().numpy())
-    return np.array(all_labels), np.array(all_probas)
+            y_true_list.append(labels.cpu().numpy() if torch.is_tensor(labels) else np.asarray(labels))
+            y_proba_list.append(probas.cpu().numpy())
+    y_true = np.concatenate(y_true_list, axis=0)
+    y_pred_proba = np.concatenate(y_proba_list, axis=0)
+    return y_true, y_pred_proba
 
 def save_classification_results(
     model: torch.nn.Module,

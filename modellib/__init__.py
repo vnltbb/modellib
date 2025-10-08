@@ -7,7 +7,7 @@ from .transformer import LoaderGroup, build_loaders_from_cv_cache, build_loaders
 
 from .utils.details import save_model_details
 from .utils.down import downscale_dataset
-from .utils.gcam import generate_grad_cam
+from .utils.gcam import generate_grad_cam, generate_grad_cam_from_loader
 from .utils.history import save_history_plot
 from .utils.plots import save_classification_results
 
