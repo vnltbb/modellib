@@ -16,14 +16,15 @@ import torchvision.transforms as T
 # =============================================================================
 _BACKBONE_FAMILY_MAP = {
     "resnet":       "timm/wide_resnet50_2.tv2_in1k",
-    "efficientnet": "timm/tf_efficientnet_b0.in1k",
+    "efficientnet": "tf_efficientnetv2_l.in1k",
+    "efficientnetb0": "timm/efficientnet_b0.ra_in1k",
     "mobilenet":    "timm/mobilenetv3_large_100.ra_in1k",
     "densenet":     "timm/densenet121.tv_in1k",
 }
 
 def resolve_checkpoint(backbone: str) -> str:
     """
-    config.backbone ∈ {resnet, efficientnet, mobilenet, densenet}만 허용.
+    config.backbone ∈ {resnet, efficientnet, efficientnetb0, mobilenet, densenet}만 허용.
     timm 리포 아이디로 매핑.
     """
     key = backbone.strip().lower()
@@ -219,7 +220,7 @@ def _make_torch_collates(
     return train_cf, eval_cf
 
 def timm_loader(
-    backbone: Literal["resnet","efficientnet","mobilenet","densenet"],
+    backbone: Literal["resnet","efficientnet","mobilenet","densenet", "efficientnetb0"],
     aug_preset: Literal["none","light","medium","strong"] = "medium",
     image_size: Optional[int] = None,
 ):
@@ -285,7 +286,7 @@ def _summary_print(prefix: str, classes: List[str], tr_n: int, va_n: int, te_n: 
 def build_loaders_from_split_cache(
     data_root: str | Path,
     split_cache_dir: str | Path,
-    backbone: Literal["resnet","efficientnet","mobilenet","densenet"],
+    backbone: Literal["resnet","efficientnet","mobilenet","densenet", "efficientnetb0"],
     batch_size: int = 32,
     aug_preset: Literal["none","light","medium","strong"] = "medium",
     image_size: Optional[int] = None,      # 지정 시 timm size 대신 사용
@@ -337,7 +338,7 @@ def build_loaders_from_cv_cache(
     data_root: str | Path,
     cv_cache_dir: str | Path,
     fold: int,
-    backbone: Literal["resnet","efficientnet","mobilenet","densenet"],
+    backbone: Literal["resnet","efficientnet","mobilenet","densenet", "efficientnetb0"],
     batch_size: int = 32,
     aug_preset: Literal["none","light","medium","strong"] = "medium",
     image_size: Optional[int] = None,
@@ -466,7 +467,7 @@ def preview_classes_imshow(
     # data_root="/mnt/c/Users/KHJ/OneDrive/project/torch-bo/dataset-pepper-preprocessed",
     # cv_cache_dir="splits/cache_cv",
     # fold=0,
-    # backbone="mobilenet",                # {resnet, efficientnet, mobilenet, densenet}
+    # backbone="mobilenet",                # {resnet, efficientnet, mobilenet, densenet, efficientnetb0}
     # batch_size=32,
     # aug_preset="medium",
     # image_size=None,                  # timm size 사용; 지정 시 그 크기로 통일

@@ -47,6 +47,19 @@ def _find_target_layer(model: torch.nn.Module) -> torch.nn.Module:
 
     raise ValueError("Grad-CAM target layer를 자동으로 찾지 못했습니다. target_layer를 수동 지정해 주세요.")
 
+def _resolve_target(model, target_layer):
+    if isinstance(target_layer, torch.nn.Module):
+        return target_layer
+    if isinstance(target_layer, str):
+        mod = model
+        for token in target_layer.split("."):
+            mod = mod._modules[token] if token.isdigit() else getattr(mod, token)
+        return mod
+    if isinstance(target_layer, int):
+        for i, (_, m) in enumerate(model.named_modules()):
+            if i == target_layer:
+                return m
+    return None
 
 def generate_grad_cam(
     model: torch.nn.Module,
@@ -172,10 +185,8 @@ def generate_grad_cam_from_loader(
     model.eval(); model.to(device)
 
     # 1) 우선 cam_target_layer를 사용
-    if target_layer is None and hasattr(model, "cam_target_layer"):
-        target_layer = model.cam_target_layer
-
-    # 2) 없으면 기존 추정 로직 사용
+    if not isinstance(target_layer, torch.nn.Module):
+        target_layer = _resolve_target(model, target_layer)
     if target_layer is None:
         target_layer = _find_target_layer(model)
 
