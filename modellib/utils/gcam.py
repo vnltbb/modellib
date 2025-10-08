@@ -82,7 +82,7 @@ def generate_grad_cam(
         target_layer = _find_target_layer(model)
         
     # 1. Grad-CAM 객체 생성
-    cam = GradCAM(model=model, target_layers=[target_layer])
+    cam = GradCAM(model=model, target_layers=target_layer)
     
     # 2. CAM 생성
     # 예측 확률이 가장 높은 클래스를 타겟으로 설정
@@ -171,9 +171,13 @@ def generate_grad_cam_from_loader(
     Path(save_dir).mkdir(parents=True, exist_ok=True)
     model.eval(); model.to(device)
 
+    # 1) 우선 cam_target_layer를 사용
+    if target_layer is None and hasattr(model, "cam_target_layer"):
+        target_layer = model.cam_target_layer
+
+    # 2) 없으면 기존 추정 로직 사용
     if target_layer is None:
         target_layer = _find_target_layer(model)
-        print(f"[GradCAM] Auto-selected target layer: {target_layer.__class__.__name__}")
 
     cam = GradCAM(model=model, target_layers=[target_layer])
 

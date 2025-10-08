@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='modellib',
-    version='0.1.6',
+    version='0.1.7',
     description='A custom Python module for streamlining plant disease detection model development pipeline.',
     author='vnltbb',  
     author_email='myhajung@gmail.com',
