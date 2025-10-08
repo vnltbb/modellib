@@ -16,7 +16,7 @@ import torchvision.transforms as T
 # =============================================================================
 _BACKBONE_FAMILY_MAP = {
     "resnet":       "timm/wide_resnet50_2.tv2_in1k",
-    "efficientnet": "tf_efficientnetv2_l.in1k",
+    "efficientnet": "timm/tf_efficientnetv2_l.in1k",
     "efficientnetb0": "timm/efficientnet_b0.ra_in1k",
     "mobilenet":    "timm/mobilenetv3_large_100.ra_in1k",
     "densenet":     "timm/densenet121.tv_in1k",
