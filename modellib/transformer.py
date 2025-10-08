@@ -462,15 +462,15 @@ def preview_classes_imshow(
 
 # 코드 테스트
 
-lg = build_loaders_from_cv_cache(
-    data_root="/mnt/c/Users/KHJ/OneDrive/project/torch-bo/dataset-pepper-preprocessed",
-    cv_cache_dir="splits/cache_cv",
-    fold=0,
-    backbone="mobilenet",                # {resnet, efficientnet, mobilenet, densenet}
-    batch_size=32,
-    aug_preset="medium",
-    image_size=None,                  # timm size 사용; 지정 시 그 크기로 통일
-)
+# lg = build_loaders_from_cv_cache(
+    # data_root="/mnt/c/Users/KHJ/OneDrive/project/torch-bo/dataset-pepper-preprocessed",
+    # cv_cache_dir="splits/cache_cv",
+    # fold=0,
+    # backbone="mobilenet",                # {resnet, efficientnet, mobilenet, densenet}
+    # batch_size=32,
+    # aug_preset="medium",
+    # image_size=None,                  # timm size 사용; 지정 시 그 크기로 통일
+# )
 
-print(lg.classes)  
-preview_classes_imshow(lg, split="train", per_class=3)
+# print(lg.classes)  
+# preview_classes_imshow(lg, split="train", per_class=3)
